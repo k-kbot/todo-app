@@ -18,4 +18,14 @@ app.get("/todos", async (c) => {
 	return c.json(allTodos);
 });
 
+app.post("/todos", async (c) => {
+	const db = drizzle(c.env.DB);
+	const { title, completed } = await c.req.json();
+	const [todo] = await db
+		.insert(todos)
+		.values({ title, completed })
+		.returning();
+	return c.json(todo, 201);
+});
+
 export default app;
