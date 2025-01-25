@@ -15,10 +15,10 @@ compatibility_date = "2025-01-25"
 # binding = "MY_BUCKET"
 # bucket_name = "my-bucket"
 
-# [[d1_databases]]
-# binding = "DB"
-# database_name = "my-database"
-# database_id = ""
+[[d1_databases]]
+binding = "DB"
+database_name = "todo-app-database"
+database_id = "local" # 空欄だと local で接続できない
 
 # [ai]
 # binding = "AI"
