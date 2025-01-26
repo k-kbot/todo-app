@@ -102,16 +102,38 @@ app.post("/users", async (c) => {
 
 app.get("/todos", authMiddleware, async (c) => {
 	const db = drizzle(c.env.DB);
-	const allTodos = await db.select().from(todos).all();
+	const userId = c.get("userId") as number;
+	const allTodos = await db
+		.select()
+		.from(todos)
+		.where(eq(todos.userId, userId));
 	return c.json(allTodos);
+});
+
+const postTodosSchema = z.object({
+	title: z.string(),
+	completed: z.boolean(),
 });
 
 app.post("/todos", authMiddleware, async (c) => {
 	const db = drizzle(c.env.DB);
-	const { title, completed } = await c.req.json();
+	const body = await c.req.json();
+	const validationResult = postTodosSchema.safeParse(body);
+
+	if (!validationResult.success) {
+		return c.json(
+			{
+				error: "Validation failed",
+				details: validationResult.error.format(),
+			},
+			400,
+		);
+	}
+
+	const { title, completed } = validationResult.data;
 	const [todo] = await db
 		.insert(todos)
-		.values({ title, completed, userId: 1 }) // TODO
+		.values({ userId: c.get("userId") as number, title, completed })
 		.returning();
 	return c.json(todo, 201);
 });
