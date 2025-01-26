@@ -7,6 +7,7 @@ import { sign } from "hono/jwt";
 import { eq } from "drizzle-orm";
 
 import { env } from "hono/adapter";
+import { authMiddleware } from "./middlewares/auth-middleware";
 
 type Bindings = {
 	DB: D1Database;
@@ -99,13 +100,13 @@ app.post("/users", async (c) => {
 	return c.json(userWithoutPassword, 201);
 });
 
-app.get("/todos", async (c) => {
+app.get("/todos", authMiddleware, async (c) => {
 	const db = drizzle(c.env.DB);
 	const allTodos = await db.select().from(todos).all();
 	return c.json(allTodos);
 });
 
-app.post("/todos", async (c) => {
+app.post("/todos", authMiddleware, async (c) => {
 	const db = drizzle(c.env.DB);
 	const { title, completed } = await c.req.json();
 	const [todo] = await db
